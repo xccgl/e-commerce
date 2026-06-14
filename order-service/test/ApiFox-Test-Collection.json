@@ -1,0 +1,290 @@
+{
+  "info": {
+    "name": "电商订单模块接口测试",
+    "description": "基于Spring Boot 3 + MyBatis Plus的电商订单CRUD接口测试集",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. 创建订单",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/orders",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"receiverName\": \"张三\",\n  \"receiverPhone\": \"13800138000\",\n  \"receiverAddress\": \"北京市朝阳区建国路88号\",\n  \"remark\": \"测试订单\",\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 2\n    },\n    {\n      \"productId\": 3,\n      \"quantity\": 1\n    }\n  ]\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function() {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response code is 200', function() {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.code).to.eql(200);",
+              "});",
+              "",
+              "pm.test('Order created successfully', function() {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('orderNo');",
+              "    pm.expect(jsonData.data.status).to.eql('PENDING');",
+              "});",
+              "",
+              "pm.test('Save order ID', function() {",
+              "    var jsonData = pm.response.json();",
+              "    pm.collectionVariables.set('orderId', jsonData.data.id);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. 查询订单详情（通过ID）",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/orders/{{orderId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function() {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Order details returned', function() {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('id');",
+              "    pm.expect(jsonData.data).to.have.property('orderNo');",
+              "    pm.expect(jsonData.data).to.have.property('totalAmount');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. 分页查询订单列表",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/orders",
+        "header": [],
+        "urlencoded": [
+          {
+            "key": "userId",
+            "value": "1",
+            "disabled": false
+          },
+          {
+            "key": "status",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "current",
+            "value": "1",
+            "disabled": false
+          },
+          {
+            "key": "size",
+            "value": "10",
+            "disabled": false
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function() {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Page data structure is correct', function() {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('total');",
+              "    pm.expect(jsonData.data).to.have.property('records');",
+              "    pm.expect(jsonData.data.records).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 更新订单信息",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/orders/{{orderId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"PAID\",\n  \"remark\": \"已支付，更新测试\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function() {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Order status updated', function() {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.status).to.eql('PAID');",
+              "    pm.expect(jsonData.data.remark).to.include('已支付');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. 删除订单",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/orders/{{orderId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function() {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Order deleted successfully', function() {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. 获取订单状态列表",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/orders/status/list",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function() {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Status list returned', function() {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('PENDING');",
+              "    pm.expect(jsonData.data).to.have.property('COMPLETED');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. 按状态筛选订单",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/orders",
+        "header": [],
+        "urlencoded": [
+          {
+            "key": "userId",
+            "value": "1"
+          },
+          {
+            "key": "status",
+            "value": "COMPLETED"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function() {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('All orders have correct status', function() {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.data.records.length > 0) {",
+              "        jsonData.data.records.forEach(function(order) {",
+              "            pm.expect(order.status).to.eql('COMPLETED');",
+              "        });",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. 异常测试 - 查询不存在的订单",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/orders/999999",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 400', function() {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('Error message returned', function() {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.code).to.eql(400);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
