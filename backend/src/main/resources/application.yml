@@ -1,0 +1,27 @@
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:sqlite:example_db.sqlite
+    driver-class-name: org.sqlite.JDBC
+    username: admin
+    password: password
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: ecommerce_jwt_secret_key_2024_example_com
+  expiration: 86400000
+
+logging:
+  level:
+    com.example.ecommerce: DEBUG
+    org.springframework.security: DEBUG
